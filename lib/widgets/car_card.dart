@@ -5,6 +5,9 @@ import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
 import '../screens/car_detail_screen.dart';
 import '../utils/format.dart';
+import 'app_route.dart';
+import 'car_image.dart';
+import 'favorite_button.dart';
 
 // ============================================================
 // WIDGET: CarCard
@@ -12,8 +15,10 @@ import '../utils/format.dart';
 // Ketuk kartu -> buka CarDetailScreen (tema ikut berubah
 // mengikuti negara mobil).
 //
-// FOTO: belum ada foto asli. Gambar diganti placeholder berupa
-// container gradasi warna tema + ikon mobil + nama model.
+// FOTO: foto asli dari car.imageUrl (Image.network, lihat
+// CarImage). Kalau gagal dimuat, tampil placeholder gradasi.
+// Gaya minimalis: sudut membulat lembut, bayangan halus,
+// spacing konsisten.
 // ============================================================
 
 class CarCard extends StatelessWidget {
@@ -31,81 +36,62 @@ class CarCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // AnimatedBuilder: kartu digambar ulang saat favorit /
-    // bandingkan berubah, supaya ikon hati langsung berubah.
+    // bandingkan berubah, supaya ikon langsung berubah.
     return AnimatedBuilder(
       animation: appState,
       builder: (context, child) {
         final theme = Theme.of(context);
-        final isFavorite = appState.isFavorite(car.id);
         final inCompare = appState.isInCompare(car.id);
 
-        return Card(
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CarDetailScreen(
-                    car: car,
-                    themeProvider: themeProvider,
-                    appState: appState,
-                  ),
-                ),
-              );
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ---------- Gambar placeholder ----------
-                Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        theme.colorScheme.primary,
-                        theme.colorScheme.secondary,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Card(
+            elevation: 0,
+            margin: EdgeInsets.zero,
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  fadeSlideRoute(
+                    CarDetailScreen(
+                      car: car,
+                      themeProvider: themeProvider,
+                      appState: appState,
                     ),
                   ),
-                  child: Stack(
+                );
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ---------- Foto asli mobil ----------
+                  Stack(
                     children: [
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.directions_car,
-                              size: 56,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              car.model,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      CarImage(car: car, height: 160),
                       // Chip negara di pojok kiri atas
                       Positioned(
-                        top: 8,
-                        left: 8,
+                        top: 10,
+                        left: 10,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 10,
+                            vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.black45,
+                            color: Colors.black54,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -120,12 +106,12 @@ class CarCard extends StatelessWidget {
                       ),
                       // Chip kondisi di pojok kanan atas
                       Positioned(
-                        top: 8,
-                        right: 8,
+                        top: 10,
+                        right: 10,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 10,
+                            vertical: 5,
                           ),
                           decoration: BoxDecoration(
                             color: car.condition == CarCondition.baru
@@ -145,105 +131,93 @@ class CarCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
 
-                // ---------- Info mobil ----------
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${car.brand} ${car.model}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        formatRupiah(car.price),
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Tahun • KM • Transmisi
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          _infoChip('${car.year}', Icons.calendar_today),
-                          _infoChip(formatKm(car.kilometer), Icons.speed),
-                          _infoChip(car.transmission, Icons.settings),
-                          _infoChip(car.location, Icons.location_on),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      // Tombol favorit & bandingkan
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              appState.toggleFavorite(car.id);
-                            },
-                            icon: Icon(
-                              isFavorite
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: isFavorite
-                                  ? Colors.red
-                                  : Colors.grey,
-                            ),
-                            tooltip: isFavorite
-                                ? 'Hapus dari favorit'
-                                : 'Simpan ke favorit',
+                  // ---------- Info mobil ----------
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${car.brand} ${car.model}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
-                          IconButton(
-                            onPressed: () {
-                              final ok = appState.toggleCompare(car.id);
-                              if (!ok) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Maksimal 3 mobil untuk dibandingkan.',
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          formatRupiah(car.price),
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // Tahun • KM • Transmisi • Lokasi
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            _infoChip('${car.year}', Icons.calendar_today),
+                            _infoChip(formatKm(car.kilometer), Icons.speed),
+                            _infoChip(car.transmission, Icons.settings),
+                            _infoChip(car.location, Icons.location_on),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        // Tombol favorit & bandingkan
+                        Row(
+                          children: [
+                            FavoriteButton(
+                              appState: appState,
+                              carId: car.id,
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                final ok = appState.toggleCompare(car.id);
+                                if (!ok) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Maksimal 3 mobil untuk dibandingkan.',
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }
-                            },
-                            icon: Icon(
-                              Icons.compare_arrows,
-                              color: inCompare
-                                  ? theme.colorScheme.primary
-                                  : Colors.grey,
+                                  );
+                                }
+                              },
+                              icon: Icon(
+                                Icons.compare_arrows,
+                                color: inCompare
+                                    ? theme.colorScheme.primary
+                                    : Colors.grey,
+                              ),
+                              tooltip: inCompare
+                                  ? 'Hapus dari perbandingan'
+                                  : 'Tambah ke perbandingan',
                             ),
-                            tooltip: inCompare
-                                ? 'Hapus dari perbandingan'
-                                : 'Tambah ke perbandingan',
-                          ),
-                          const Spacer(),
-                          Text(
-                            car.fuel,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
+                            const Spacer(),
+                            Text(
+                              car.fuel,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 14,
-                            color: Colors.grey,
-                          ),
-                        ],
-                      ),
-                    ],
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              size: 14,
+                              color: Colors.grey,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -254,9 +228,9 @@ class CarCard extends StatelessWidget {
   // Chip kecil untuk info singkat (tahun, KM, transmisi, lokasi)
   Widget _infoChip(String label, IconData icon) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: Colors.grey[100],
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

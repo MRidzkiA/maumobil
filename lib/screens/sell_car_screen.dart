@@ -102,6 +102,8 @@ class _SellCarScreenState extends State<SellCarScreen> {
       location: _locationController.text.trim(),
       seller: _sellerController.text.trim(),
       description: _descriptionController.text.trim(),
+      // Iklan pengguna belum punya foto: tampil placeholder tema.
+      imageUrl: '',
     );
 
     widget.appState.addListing(car);
@@ -409,8 +411,9 @@ class _SellCarScreenState extends State<SellCarScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Foto asli belum tersedia di prototipe ini — iklanmu akan '
-              'tampil dengan gambar placeholder warna tema.',
+              'Foto belum bisa diunggah di prototipe ini — iklanmu akan '
+              'tampil dengan gambar placeholder warna tema, sedangkan '
+              'mobil katalog memakai foto asli.',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey,

@@ -5,12 +5,15 @@ import '../models/car.dart';
 import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
 import '../utils/format.dart';
+import '../widgets/app_route.dart';
+import '../widgets/car_image.dart';
+import 'car_detail_screen.dart';
 
 // ============================================================
 // LAYAR: CompareScreen (bandingkan mobil)
 // Membandingkan sampai 3 mobil dalam satu tabel:
-// harga, tahun, kondisi, kilometer, transmisi, bahan bakar,
-// mesin, warna, dan lokasi.
+// foto, harga, tahun, kondisi, kilometer, transmisi,
+// bahan bakar, mesin, warna, lokasi, dan negara.
 // Dibuka dari tombol "Bandingkan" di layar Cari / Detail.
 // ============================================================
 
@@ -24,6 +27,16 @@ class CompareScreen extends StatelessWidget {
     required this.appState,
   });
 
+  // Cari mobil berdasarkan id. Mengembalikan null kalau id
+  // tidak ditemukan (misal iklan sudah dihapus) — mobil seperti
+  // itu dilewati, bukan diganti mobil lain.
+  Car? _findCar(List<Car> allCars, String id) {
+    for (final car in allCars) {
+      if (car.id == id) return car;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,14 +45,11 @@ class CompareScreen extends StatelessWidget {
         animation: appState,
         builder: (context, child) {
           // Mobil yang dipilih, diurutkan sesuai urutan pilihan.
+          // Id yang tidak ditemukan dilewati (tidak diganti mobil lain).
           final allCars = [...cars, ...appState.myListings];
           final compareCars = appState.compareIds
-              .map(
-                (id) => allCars.firstWhere(
-                  (car) => car.id == id,
-                  orElse: () => allCars.first,
-                ),
-              )
+              .map((id) => _findCar(allCars, id))
+              .whereType<Car>()
               .toList();
 
           if (compareCars.length < 2) {
@@ -72,8 +82,7 @@ class CompareScreen extends StatelessWidget {
               final inCompare = appState.isInCompare(car.id);
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundColor:
-                      Theme.of(context).colorScheme.primary,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   child: const Icon(
                     Icons.directions_car,
                     color: Colors.white,
@@ -113,6 +122,7 @@ class CompareScreen extends StatelessWidget {
 
   // ---------- Tabel perbandingan ----------
   Widget _buildTable(BuildContext context, List<Car> compareCars) {
+    final theme = Theme.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -129,75 +139,141 @@ class CompareScreen extends StatelessWidget {
               );
             }).toList(),
           ),
-          const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columnSpacing: 24,
-              columns: [
-                const DataColumn(
-                  label: Text(
-                    'Spesifikasi',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+          const SizedBox(height: 12),
+          // Tombol bersihkan semua
+          TextButton.icon(
+            onPressed: () {
+              appState.clearCompare();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Perbandingan dibersihkan.'),
                 ),
-                ...compareCars.map(
-                  (car) => DataColumn(
-                    label: Text(
-                      '${car.brand}\n${car.model}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+              );
+            },
+            icon: const Icon(Icons.clear_all, size: 18),
+            label: const Text('Bersihkan Semua'),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  columnSpacing: 24,
+                  columns: [
+                    const DataColumn(
+                      label: Text(
+                        'Spesifikasi',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
+                    ...compareCars.map(
+                      (car) => DataColumn(
+                        label: Text(
+                          '${car.brand}\n${car.model}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                  rows: [
+                    // Baris foto: ketuk foto untuk buka detail mobil.
+                    DataRow(
+                      cells: [
+                        const DataCell(
+                          Text(
+                            'Foto',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        ...compareCars.map(
+                          (car) => DataCell(
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  fadeSlideRoute(
+                                    CarDetailScreen(
+                                      car: car,
+                                      themeProvider: themeProvider,
+                                      appState: appState,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: SizedBox(
+                                  width: 110,
+                                  height: 70,
+                                  child: CarImage(car: car, height: 70),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    _row(
+                      'Harga',
+                      compareCars.map((c) => formatRupiah(c.price)).toList(),
+                    ),
+                    _row(
+                      'Tahun',
+                      compareCars.map((c) => '${c.year}').toList(),
+                    ),
+                    _row(
+                      'Kondisi',
+                      compareCars.map((c) => c.condition.label).toList(),
+                    ),
+                    _row(
+                      'Kilometer',
+                      compareCars.map((c) => formatKm(c.kilometer)).toList(),
+                    ),
+                    _row(
+                      'Transmisi',
+                      compareCars.map((c) => c.transmission).toList(),
+                    ),
+                    _row(
+                      'Bahan Bakar',
+                      compareCars.map((c) => c.fuel).toList(),
+                    ),
+                    _row(
+                      'Mesin',
+                      compareCars.map((c) => c.engine).toList(),
+                    ),
+                    _row(
+                      'Warna',
+                      compareCars.map((c) => c.color).toList(),
+                    ),
+                    _row(
+                      'Lokasi',
+                      compareCars.map((c) => c.location).toList(),
+                    ),
+                    _row(
+                      'Negara',
+                      compareCars.map((c) => c.country.label).toList(),
+                    ),
+                  ],
                 ),
-              ],
-              rows: [
-                _row(
-                  'Harga',
-                  compareCars.map((c) => formatRupiah(c.price)).toList(),
-                ),
-                _row(
-                  'Tahun',
-                  compareCars.map((c) => '${c.year}').toList(),
-                ),
-                _row(
-                  'Kondisi',
-                  compareCars.map((c) => c.condition.label).toList(),
-                ),
-                _row(
-                  'Kilometer',
-                  compareCars.map((c) => formatKm(c.kilometer)).toList(),
-                ),
-                _row(
-                  'Transmisi',
-                  compareCars.map((c) => c.transmission).toList(),
-                ),
-                _row(
-                  'Bahan Bakar',
-                  compareCars.map((c) => c.fuel).toList(),
-                ),
-                _row(
-                  'Mesin',
-                  compareCars.map((c) => c.engine).toList(),
-                ),
-                _row(
-                  'Warna',
-                  compareCars.map((c) => c.color).toList(),
-                ),
-                _row(
-                  'Lokasi',
-                  compareCars.map((c) => c.location).toList(),
-                ),
-                _row(
-                  'Negara',
-                  compareCars.map((c) => c.country.label).toList(),
-                ),
-              ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Tips: ketuk chip mobil di atas untuk menghapusnya dari perbandingan.',
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+          Text(
+            'Tips: ketuk chip mobil di atas untuk menghapusnya dari '
+            'perbandingan, atau ketuk foto untuk melihat detail mobil.',
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Harga termurah: ${formatRupiah(compareCars.map((c) => c.price).reduce((a, b) => a < b ? a : b))}',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.primary,
+            ),
           ),
         ],
       ),

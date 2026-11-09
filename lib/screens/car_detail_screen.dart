@@ -4,14 +4,19 @@ import '../models/car.dart';
 import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
 import '../utils/format.dart';
+import '../widgets/app_route.dart';
+import '../widgets/car_image.dart';
+import '../widgets/favorite_button.dart';
+import 'chat_screen.dart';
 import 'credit_simulator_screen.dart';
 
 // ============================================================
 // LAYAR: CarDetailScreen (detail satu mobil)
 // Dibuka dari CarCard. Saat halaman ini dibuka, tema aplikasi
 // langsung berubah mengikuti negara mobil tersebut.
-// Isi: galeri placeholder, harga, spesifikasi, deskripsi,
-// info penjual, tombol favorit, bandingkan, dan simulasi kredit.
+// Isi: foto asli, harga, spesifikasi, deskripsi,
+// info penjual, tombol favorit, bandingkan, simulasi kredit,
+// chat penjual, dan telepon.
 // ============================================================
 
 class CarDetailScreen extends StatefulWidget {
@@ -41,17 +46,45 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
   void _openCreditSimulator() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) =>
-            CreditSimulatorScreen(initialPrice: widget.car.price),
+      fadeSlideRoute(
+        CreditSimulatorScreen(initialPrice: widget.car.price),
       ),
     );
   }
 
-  void _showComingSoon(String fitur) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$fitur segera hadir di fase berikutnya (prototipe).'),
+  void _openChat() {
+    Navigator.push(
+      context,
+      fadeSlideRoute(
+        ChatScreen(car: widget.car, appState: widget.appState),
+      ),
+    );
+  }
+
+  // Telepon: nomor penjual belum ada di prototipe, jadi tampilkan
+  // dialog dengan pilihan untuk lanjut ke chat.
+  void _showCallDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Hubungi ${widget.car.seller}'),
+        content: const Text(
+          'Nomor telepon penjual belum tersedia di prototipe ini. '
+          'Silakan hubungi penjual lewat chat di dalam aplikasi.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tutup'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _openChat();
+            },
+            child: const Text('Buka Chat'),
+          ),
+        ],
       ),
     );
   }
@@ -73,75 +106,55 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ---------- Galeri placeholder ----------
-                Container(
-                  height: 220,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        theme.colorScheme.primary,
-                        theme.colorScheme.secondary,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                // ---------- Foto asli mobil ----------
+                Stack(
+                  children: [
+                    CarImage(car: car, height: 240),
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${car.country.code} • ${car.country.label}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Stack(
-                    children: [
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.directions_car,
-                              size: 80,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '${car.brand} ${car.model}',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Foto asli belum tersedia (prototipe)',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
                         ),
-                      ),
-                      Positioned(
-                        top: 12,
-                        left: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black45,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            '${car.country.code} • ${car.country.label}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        decoration: BoxDecoration(
+                          color: car.condition == CarCondition.baru
+                              ? Colors.green
+                              : Colors.orange,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          car.condition.label,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
 
                 Padding(
@@ -197,17 +210,29 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                widget.appState.toggleFavorite(car.id);
-                              },
-                              icon: Icon(
-                                isFavorite
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                borderRadius: BorderRadius.circular(14),
                               ),
-                              label: Text(
-                                isFavorite ? 'Favorit ✓' : 'Favorit',
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  FavoriteButton(
+                                    appState: widget.appState,
+                                    carId: car.id,
+                                    color: Colors.white70,
+                                    activeColor: Colors.white,
+                                  ),
+                                  Text(
+                                    isFavorite ? 'Favorit ✓' : 'Favorit',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -347,7 +372,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () => _showComingSoon('Fitur chat'),
+                              onPressed: _openChat,
                               icon: const Icon(Icons.chat),
                               label: const Text('Chat'),
                             ),
@@ -355,8 +380,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: OutlinedButton.icon(
-                              onPressed: () =>
-                                  _showComingSoon('Fitur telepon'),
+                              onPressed: _showCallDialog,
                               icon: const Icon(Icons.phone),
                               label: const Text('Telepon'),
                             ),

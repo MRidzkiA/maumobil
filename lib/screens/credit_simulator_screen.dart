@@ -54,10 +54,24 @@ class _CreditSimulatorScreenState extends State<CreditSimulatorScreen> {
     super.dispose();
   }
 
+  // Bersihkan angka dari titik/spasi pemisah ribuan yang mungkin
+  // diketik pengguna (contoh: "300.000.000" -> 300000000).
+  int? _parseRupiah(String text) {
+    final cleaned = text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleaned.isEmpty) return null;
+    return int.tryParse(cleaned);
+  }
+
+  // Bunga boleh memakai koma desimal ala Indonesia ("8,5").
+  double? _parseRate(String text) {
+    final cleaned = text.trim().replaceAll(',', '.');
+    return double.tryParse(cleaned);
+  }
+
   void _hitung() {
-    final price = int.tryParse(_priceController.text.trim());
-    final dp = int.tryParse(_dpController.text.trim());
-    final rate = double.tryParse(_rateController.text.trim());
+    final price = _parseRupiah(_priceController.text.trim());
+    final dp = _parseRupiah(_dpController.text.trim());
+    final rate = _parseRate(_rateController.text.trim());
 
     setState(() {
       _error = null;

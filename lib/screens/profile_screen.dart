@@ -4,6 +4,7 @@ import '../data/cars.dart';
 import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
 import '../utils/format.dart';
+import '../widgets/app_route.dart';
 import 'car_detail_screen.dart';
 
 // ============================================================
@@ -27,8 +28,8 @@ class ProfileScreen extends StatelessWidget {
     final car = allCars.firstWhere((c) => c.id == carId);
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => CarDetailScreen(
+      fadeSlideRoute(
+        CarDetailScreen(
           car: car,
           themeProvider: themeProvider,
           appState: appState,
@@ -217,8 +218,10 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'MauMobil v1.0.0 (MVP) — aplikasi jual beli mobil baru & bekas. '
+                'MauMobil v1.1.0 — aplikasi jual beli mobil baru & bekas. '
                 'Tema aplikasi berubah mengikuti negara asal mobil: Jepang atau Eropa.\n\n'
+                'Foto mobil dimuat dari internet; kalau offline, tampil placeholder warna tema. '
+                'Chat penjual aktif sebagai simulasi lokal di prototipe ini.\n\n'
                 'Harga yang tampil adalah perkiraan untuk prototipe, bukan harga resmi.',
                 style: TextStyle(fontSize: 13, color: Colors.grey),
               ),

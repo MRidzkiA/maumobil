@@ -5,6 +5,7 @@ import '../models/brand.dart';
 import '../models/car.dart';
 import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
+import '../widgets/app_route.dart';
 import '../widgets/car_card.dart';
 import '../widgets/country_picker.dart';
 import 'brand_screen.dart';
@@ -45,8 +46,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openCarList({Country? country, String? query}) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => CarListScreen(
+      fadeSlideRoute(
+        CarListScreen(
           themeProvider: widget.themeProvider,
           appState: widget.appState,
           initialCountry: country,
@@ -59,8 +60,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openBrand(Brand brand) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => BrandScreen(
+      fadeSlideRoute(
+        BrandScreen(
           brand: brand,
           themeProvider: widget.themeProvider,
           appState: widget.appState,
@@ -79,6 +80,29 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ---------- Logo utama MauMobil ----------
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Image.asset(
+              'assets/logo/maumobil-logo.png',
+              height: 108,
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // ---------- Sapaan ----------
           const Text(
             'Mau mobil apa hari ini?',

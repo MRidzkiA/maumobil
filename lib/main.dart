@@ -10,6 +10,7 @@ import 'screens/favorites_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/sell_car_screen.dart';
+import 'screens/splash_screen.dart';
 
 // ============================================================
 // main() = pintu masuk aplikasi.
@@ -22,16 +23,37 @@ void main() {
 // MauMobilApp = widget utama aplikasi.
 // Membuat ThemeProvider + AppState SEKALI di sini, lalu dipakai
 // di semua layar lewat constructor (tanpa package provider).
-class MauMobilApp extends StatelessWidget {
-  MauMobilApp({super.key});
+// Stateful karena menampilkan SplashScreen sebentar di awal.
+class MauMobilApp extends StatefulWidget {
+  const MauMobilApp({super.key});
 
+  @override
+  State<MauMobilApp> createState() => _MauMobilAppState();
+}
+
+class _MauMobilAppState extends State<MauMobilApp> {
   final ThemeProvider themeProvider = ThemeProvider();
   final AppState appState = AppState();
+  bool _showSplash = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Splash tampil 1,5 detik, lalu masuk ke layar utama.
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        setState(() => _showSplash = false);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     // AnimatedBuilder: MaterialApp digambar ulang setiap kali
     // tema berubah, supaya SELURUH aplikasi ikut berganti tema.
+    // AnimatedTheme: perubahan tema berjalan mulus (animasi
+    // warna ~350 ms) sehingga tidak berkedip saat ganti
+    // tema Jepang / Eropa.
     return AnimatedBuilder(
       animation: themeProvider,
       builder: (context, child) {
@@ -39,12 +61,19 @@ class MauMobilApp extends StatelessWidget {
           title: 'MauMobil',
           debugShowCheckedModeBanner: false, // Hilangkan tulisan DEBUG
           theme: themeProvider.currentTheme,
-          home: child,
+          home: AnimatedTheme(
+            data: themeProvider.currentTheme,
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeInOut,
+            child: child!,
+          ),
         );
       },
-      // MainScreen dibuat sekali di sini (child) supaya tidak
-      // ikut dibuat ulang saat tema berubah.
-      child: MainScreen(themeProvider: themeProvider, appState: appState),
+      // MainScreen / SplashScreen dibuat sekali di sini (child)
+      // supaya tidak ikut dibuat ulang saat tema berubah.
+      child: _showSplash
+          ? const SplashScreen()
+          : MainScreen(themeProvider: themeProvider, appState: appState),
     );
   }
 }
@@ -126,6 +155,7 @@ class _MainScreenState extends State<MainScreen> {
         currentIndex: _selectedIndex,
         onTap: _onTabTapped,
         type: BottomNavigationBarType.fixed, // Wajib untuk 5 tab
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

@@ -5,6 +5,7 @@ import '../models/brand.dart';
 import '../models/car.dart';
 import '../providers/app_state.dart';
 import '../providers/theme_provider.dart';
+import '../widgets/app_route.dart';
 import '../widgets/car_card.dart';
 import 'compare_screen.dart';
 
@@ -112,8 +113,8 @@ class _CarListScreenState extends State<CarListScreen> {
   void _openCompare() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => CompareScreen(
+      fadeSlideRoute(
+        CompareScreen(
           themeProvider: widget.themeProvider,
           appState: widget.appState,
         ),

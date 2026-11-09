@@ -63,6 +63,7 @@ class Car {
   final String location; // Contoh: 'Jakarta Selatan'
   final String seller; // Nama penjual / dealer
   final String description; // Deskripsi singkat mobil
+  final String imageUrl; // URL foto asli mobil ('' = belum ada foto)
 
   // Constructor const: semua data wajib diisi saat membuat Car.
   const Car({
@@ -81,5 +82,6 @@ class Car {
     required this.location,
     required this.seller,
     required this.description,
+    this.imageUrl = '',
   });
 }

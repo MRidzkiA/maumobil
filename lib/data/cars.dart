@@ -14,8 +14,10 @@ import '../models/car.dart';
 // sebagai patokan jual beli sungguhan. Untuk versi produksi,
 // harga harus diambil dari sumber data resmi yang diperbarui.
 //
-// Foto mobil: belum ada foto asli. Tampilan memakai placeholder
-// gradasi warna tema + nama model (lihat CarCard).
+// Foto mobil: foto asli dari URL publik (lihat imageUrl tiap mobil).
+// Foto dimuat dengan Image.network (lihat widgets/car_image.dart);
+// kalau gagal dimuat (misal offline), tampil placeholder gradasi
+// warna tema. Daftar sumber foto ada di README.md.
 // ============================================================
 
 const List<Car> cars = [
@@ -24,6 +26,8 @@ const List<Car> cars = [
     id: 'avanza',
     brand: 'Toyota',
     model: 'Avanza 1.5 G CVT',
+    imageUrl:
+        'https://www.autocom.mx/static/agency-go-virtual/Toyota/Avanza/2024/360-color-picker-1/color2/color2_3.jpg',
     country: Country.jepang,
     year: 2024,
     price: 264000000,
@@ -43,6 +47,8 @@ const List<Car> cars = [
     id: 'zenix',
     brand: 'Toyota',
     model: 'Innova Zenix 2.0 G HV',
+    imageUrl:
+        'https://imgcdn.zigwheels.my/large/gallery/color/25/2007/toyota-innova-zenix-color-945696.jpg',
     country: Country.jepang,
     year: 2024,
     price: 471000000,
@@ -64,6 +70,7 @@ const List<Car> cars = [
     id: 'brio',
     brand: 'Honda',
     model: 'Brio Satya 1.2 E CVT',
+    imageUrl: 'https://apollo.olx.co.id/v1/files/69aba1110c264-ID/image',
     country: Country.jepang,
     year: 2024,
     price: 196000000,
@@ -83,6 +90,8 @@ const List<Car> cars = [
     id: 'crv',
     brand: 'Honda',
     model: 'CR-V 1.5 Turbo Prestige',
+    imageUrl:
+        'https://www.vosshonda.com/assets/d4560/img/uagNqJ6MCJV7HFeuc9kmAJB2vzBBLMNmeUiYyL86.jpg',
     country: Country.jepang,
     year: 2023,
     price: 525000000,
@@ -104,6 +113,8 @@ const List<Car> cars = [
     id: 'ayla',
     brand: 'Daihatsu',
     model: 'Ayla 1.2 R',
+    imageUrl:
+        'https://cms-2023.daihatsu.co.id/cdn-cgi/image/w=700,q=85/assets/0bc65861-afa5-40d5-a277-fa76b6aab854',
     country: Country.jepang,
     year: 2024,
     price: 171000000,
@@ -123,6 +134,8 @@ const List<Car> cars = [
     id: 'terios',
     brand: 'Daihatsu',
     model: 'Terios R 1.5',
+    imageUrl:
+        'https://cms-2023.daihatsu.co.id/cdn-cgi/image/w=700,q=85/assets/ac977e38-8ac2-4730-9f4f-b1b04f336b09',
     country: Country.jepang,
     year: 2022,
     price: 218000000,
@@ -144,6 +157,8 @@ const List<Car> cars = [
     id: 'bmw320i',
     brand: 'BMW',
     model: '320i Sport',
+    imageUrl:
+        'https://img4.icarcdn.com/94825441/gallery_recon-car-carlist-bmw-3-series-320i-m-sport-sedan-malaysia_000094825441_c3779049_06b1_4819_8d35_992b21943388.jpg?smia=xTM',
     country: Country.eropa,
     year: 2023,
     price: 980000000,
@@ -163,6 +178,8 @@ const List<Car> cars = [
     id: 'bmwx1',
     brand: 'BMW',
     model: 'X1 sDrive18i',
+    imageUrl:
+        'https://motorgiga.com/uploads/marcas-modelos/versiones/bmw-x1-2023-estandar-estandar-x1-sdrive18d.jpg',
     country: Country.eropa,
     year: 2022,
     price: 715000000,
@@ -184,6 +201,8 @@ const List<Car> cars = [
     id: 'c200',
     brand: 'Mercedes-Benz',
     model: 'C200 AMG Line',
+    imageUrl:
+        'https://autouncle-public.s3.eu-west-1.amazonaws.com/de/car_images/d56eba19-ef21-4c39-a99b-2820d3cc8c70.jpg',
     country: Country.eropa,
     year: 2023,
     price: 1050000000,
@@ -203,6 +222,8 @@ const List<Car> cars = [
     id: 'gla200',
     brand: 'Mercedes-Benz',
     model: 'GLA 200 AMG Line',
+    imageUrl:
+        'https://imprensa.mercedes-benz.com.br/storage/posts/7646f894d1465658b8597c89846d5276758f1c6e.jpg',
     country: Country.eropa,
     year: 2022,
     price: 765000000,
@@ -224,6 +245,8 @@ const List<Car> cars = [
     id: 'a4',
     brand: 'Audi',
     model: 'A4 2.0 TFSI',
+    imageUrl:
+        'https://static0.carbuzzimages.com/wordpress/wp-content/uploads/2024/02/13979-43.jpg?w=1200&h=675&fit=crop',
     country: Country.eropa,
     year: 2023,
     price: 1150000000,
@@ -243,6 +266,8 @@ const List<Car> cars = [
     id: 'q3',
     brand: 'Audi',
     model: 'Q3 1.4 TFSI',
+    imageUrl:
+        'https://images.carexpert.com.au/resize/800/-/cms/v1/media/2022-audi-q3-primary-image.jpg',
     country: Country.eropa,
     year: 2022,
     price: 690000000,
