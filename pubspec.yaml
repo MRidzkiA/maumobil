@@ -1,0 +1,25 @@
+name: maumobil
+description: "MauMobil - Aplikasi jual beli mobil baru dan bekas untuk pasar Indonesia. Tema aplikasi berubah mengikuti negara asal mobil (Jepang / Eropa)."
+# publish_to: 'none' artinya app ini tidak akan dipublish ke pub.dev
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  # Tidak ada package lain. State management memakai ChangeNotifier
+  # bawaan Flutter SDK saja (tanpa package provider),
+  # supaya bisa jalan offline dan mudah dipelajari pemula.
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

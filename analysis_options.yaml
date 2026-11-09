@@ -1,0 +1,8 @@
+# Aturan pengecekan kode (lint) standar Flutter.
+# Kalau ada kode yang tidak rapi, Android Studio akan memberi peringatan.
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    prefer_const_constructors: true
+    prefer_final_fields: true
